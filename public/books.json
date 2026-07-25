@@ -28,7 +28,8 @@
     "dimensions": "8.5 x 0.25 x 11 inches",
     "isbn": "979-8257175565",
     "price": "MAD 74.81",
-    "contentPages": []
+    "contentPages": [],
+    "hidden": true
   },
   {
     "id": "milo-anxiety",
