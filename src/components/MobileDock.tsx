@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import Dock from "./Dock";
 
 const svgIcons = {
   home: (
@@ -27,11 +26,11 @@ const svgIcons = {
   ),
 };
 
-const dockItems = [
-  { icon: svgIcons.home, label: "Home", href: "/" },
-  { icon: svgIcons.books, label: "Books", href: "/books" },
-  { icon: svgIcons.about, label: "About", href: "/about" },
-  { icon: svgIcons.contact, label: "Contact", href: "/contact" },
+const items = [
+  { label: "Home", href: "/", icon: svgIcons.home },
+  { label: "Books", href: "/books", icon: svgIcons.books },
+  { label: "About", href: "/about", icon: svgIcons.about },
+  { label: "Contact", href: "/contact", icon: svgIcons.contact },
 ];
 
 export default function MobileDock() {
@@ -39,8 +38,10 @@ export default function MobileDock() {
   const pathname = usePathname();
   const lastY = useRef(0);
   const [show, setShow] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     lastY.current = window.scrollY;
     const onScroll = () => {
       const y = window.scrollY;
@@ -51,23 +52,32 @@ export default function MobileDock() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  if (!mounted) return null;
+
   return (
     <motion.div
       animate={{ y: show ? 0 : 120 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed bottom-0 left-0 right-0 z-50 flex justify-center md:hidden"
     >
-      <Dock
-        items={dockItems.map(({ icon, label, href }) => ({
-          icon,
-          label,
-          onClick: () => router.push(href),
-          className: pathname === href ? "text-white bg-white/10" : "text-white/50",
-        }))}
-        panelHeight={56}
-        baseItemSize={44}
-        magnification={56}
-      />
+      <nav className="flex items-end gap-2 px-4 pb-3 pt-2 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl mb-4 shadow-lg shadow-black/20">
+        {items.map(({ label, href, icon }) => {
+          const active = pathname === href;
+          return (
+            <button
+              key={href}
+              onClick={() => router.push(href)}
+              className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 ${
+                active
+                  ? "text-white bg-white/15 scale-110"
+                  : "text-white/50 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              {icon}
+            </button>
+          );
+        })}
+      </nav>
     </motion.div>
   );
 }
