@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 const ADMIN_PASSWORD = "@Karkoub8891#";
@@ -19,8 +19,8 @@ export default function ManageBooksPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [books, setBooks] = useState<BookData[]>([]);
+  const [originalBooks, setOriginalBooks] = useState<BookData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function ManageBooksPage() {
     if (!authenticated) return;
     fetch(BOOKS_JSON_URL)
       .then((r) => r.json())
-      .then((data) => { setBooks(data); setLoading(false); })
+      .then((data) => { setBooks(data); setOriginalBooks(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [authenticated]);
 
@@ -48,24 +48,35 @@ export default function ManageBooksPage() {
     }
   }
 
-  function toggleHidden(id: string) {
-    setBooks((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, hidden: !b.hidden } : b))
-    );
+  const hasChanges = JSON.stringify(books) !== JSON.stringify(originalBooks);
+
+  function copyAndNotify(json: string) {
+    navigator.clipboard.writeText(json);
   }
 
-  function deleteBook(id: string) {
-    if (!confirm("Delete this book?")) return;
-    setBooks((prev) => prev.filter((b) => b.id !== id));
-  }
-
-  function copyAll() {
-    const json = JSON.stringify(books, null, 2);
-    navigator.clipboard.writeText(json).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+  const toggleHidden = useCallback((id: string) => {
+    setBooks((prev) => {
+      const updated = prev.map((b) => (b.id === id ? { ...b, hidden: !b.hidden } : b));
+      const json = JSON.stringify(updated, null, 2);
+      copyAndNotify(json);
+      return updated;
     });
-  }
+  }, []);
+
+  const deleteBook = useCallback((id: string) => {
+    if (!confirm("Delete this book?")) return;
+    setBooks((prev) => {
+      const updated = prev.filter((b) => b.id !== id);
+      const json = JSON.stringify(updated, null, 2);
+      copyAndNotify(json);
+      return updated;
+    });
+  }, []);
+
+  const copyAll = useCallback(() => {
+    const json = JSON.stringify(books, null, 2);
+    copyAndNotify(json);
+  }, [books]);
 
   const filtered = books.filter((b) =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -102,7 +113,7 @@ export default function ManageBooksPage() {
   const visibleCount = books.filter((b) => !b.hidden).length;
 
   return (
-    <main className="min-h-screen pb-24">
+    <main className="min-h-screen pb-32">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/10 via-transparent to-transparent pointer-events-none" />
 
       <div className="relative pt-28 pb-12 px-6">
@@ -117,7 +128,7 @@ export default function ManageBooksPage() {
                 onClick={copyAll}
                 className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-purple-600 text-white text-sm font-semibold transition-all hover:from-orange-400 hover:to-purple-500 hover:shadow-lg hover:shadow-purple-500/25 active:scale-[0.98]"
               >
-                {copied ? "Copied!" : "Copy All JSON"}
+                Copy All JSON
               </button>
               <Link href="/karkoub" className="text-white/40 hover:text-white/70 text-sm font-body transition-colors">
                 &larr; Back
@@ -217,12 +228,39 @@ export default function ManageBooksPage() {
         </div>
       </div>
 
-      {copied && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl bg-green-500/20 border border-green-500/40 text-green-400 text-sm shadow-2xl backdrop-blur-xl">
-          Full JSON copied! Paste it in{" "}
-          <a href="https://github.com/MohKarkoub/sdmoh-studio/edit/main/public/books.json" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-300">
-            GitHub books.json
-          </a>
+      {hasChanges && (
+        <div className="fixed bottom-0 left-0 right-0 z-50">
+          <div className="max-w-5xl mx-auto px-6 pb-6">
+            <div className="relative p-4 rounded-2xl bg-zinc-900/95 border border-yellow-500/30 backdrop-blur-xl shadow-2xl shadow-yellow-500/10">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                  <p className="text-yellow-400/80 text-sm font-body">
+                    Unsaved changes &mdash; modifications are local only
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="https://github.com/MohKarkoub/sdmoh-studio/edit/main/public/books.json"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-xl bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-sm font-medium hover:bg-yellow-500/25 transition-all"
+                  >
+                    Open GitHub
+                  </a>
+                  <button
+                    onClick={copyAll}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-purple-600 text-white text-sm font-semibold hover:from-orange-400 hover:to-purple-500 transition-all"
+                  >
+                    Copy JSON &amp; Save
+                  </button>
+                </div>
+              </div>
+              <p className="mt-2 text-yellow-500/40 text-[11px] font-body">
+                After copying, go to GitHub, select all, and paste to replace the content
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </main>

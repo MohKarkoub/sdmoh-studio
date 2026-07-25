@@ -154,9 +154,9 @@ export default function EditBookPage() {
 
           {saved && (
             <div className="mb-6 p-4 rounded-xl bg-green-500/15 border border-green-500/30 text-green-400 text-sm text-center">
-              JSON copied to clipboard! Go to{" "}
-              <a href="https://github.com/MohKarkoub/sdmoh-studio/edit/main/public/books.json" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-300">GitHub books.json</a>{" "}
-              and paste the updated object.
+              <strong>JSON copied!</strong> Go to{" "}
+              <a href="https://github.com/MohKarkoub/sdmoh-studio/edit/main/public/books.json" target="_blank" rel="noopener noreferrer" className="underline hover:text-green-300">GitHub books.json</a>
+              , find this book by its <code className="text-green-300 text-[11px] bg-green-500/10 px-1 rounded">id</code>, and replace the object with the copied JSON.
             </div>
           )}
 

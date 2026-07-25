@@ -360,7 +360,7 @@ export default function AddBookPage() {
 
         {copied && (
           <div className="mt-4 p-4 rounded-xl bg-green-500/20 border border-green-500/40 text-green-400 text-sm text-center">
-            JSON copied to clipboard! Go to{" "}
+            <strong>JSON copied!</strong> Go to{" "}
             <a
               href="https://github.com/MohKarkoub/sdmoh-studio/edit/main/public/books.json"
               target="_blank"
@@ -368,8 +368,8 @@ export default function AddBookPage() {
               className="underline hover:text-green-300"
             >
               GitHub books.json
-            </a>{" "}
-            and paste it inside the array.
+            </a>
+            , add a comma after the last book, and paste this new entry before the closing bracket.
           </div>
         )}
       </div>
