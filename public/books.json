@@ -44,7 +44,8 @@
     "dimensions": "8.5 x 0.27 x 11 inches",
     "isbn": "979-8254706212",
     "price": "MAD 74.81",
-    "contentPages": []
+    "contentPages": [],
+    "hidden": true
   },
   {
     "id": "funny-cats",
