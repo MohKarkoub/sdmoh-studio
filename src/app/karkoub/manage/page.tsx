@@ -40,22 +40,22 @@ export default function ManageBooksPage() {
 
   function loadBooks() {
     setLoading(true);
-    const doFetch = (url: string, isRaw = true) =>
-      fetch(url)
+    const savedToken = sessionStorage.getItem("github_token") || "";
+    if (savedToken) {
+      fetch(GITHUB_API, { headers: { Authorization: `token ${savedToken}` } })
         .then((r) => r.json())
         .then((data) => {
-          const books = isRaw ? data : JSON.parse(decodeURIComponent(escape(atob(data.content))));
+          const books = JSON.parse(decodeURIComponent(escape(atob(data.content))));
           setBooks(books);
           setOriginalBooks(books);
           setLoading(false);
         })
         .catch(() => setLoading(false));
-
-    const savedToken = sessionStorage.getItem("github_token") || "";
-    if (savedToken) {
-      doFetch(GITHUB_API, false);
     } else {
-      doFetch(rawUrl());
+      fetch(rawUrl())
+        .then((r) => r.json())
+        .then((data) => { setBooks(data); setOriginalBooks(data); setLoading(false); })
+        .catch(() => setLoading(false));
     }
   }
 
