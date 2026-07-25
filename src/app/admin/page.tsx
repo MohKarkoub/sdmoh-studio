@@ -16,6 +16,7 @@ interface BookForm {
   dimensions: string;
   isbn: string;
   price: string;
+  contentPages: string[];
 }
 
 const emptyForm: BookForm = {
@@ -30,6 +31,7 @@ const emptyForm: BookForm = {
   dimensions: "",
   isbn: "",
   price: "",
+  contentPages: [],
 };
 
 export default function AdminPage() {
@@ -70,7 +72,6 @@ export default function AdminPage() {
     const newBook = {
       id: generateId(form.title),
       ...form,
-      contentPages: [],
     };
     const json = JSON.stringify(newBook, null, 2);
     navigator.clipboard.writeText(json).then(() => {
@@ -79,7 +80,7 @@ export default function AdminPage() {
     });
   }
 
-  function updateField(field: keyof BookForm, value: string) {
+  function updateField(field: keyof BookForm, value: string | string[]) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
@@ -257,6 +258,82 @@ export default function AdminPage() {
                 onChange={(e) => updateField("isbn", e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-white/[0.12] border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-purple-500/50"
               />
+            </div>
+          </div>
+
+          <div className="md:col-span-2 pt-4 border-t border-white/10">
+            <label className="block text-white/60 mb-3 text-sm">Content Pages (Preview Images)</label>
+            {form.contentPages.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-4">
+                {form.contentPages.map((url, idx) => (
+                  <div key={idx} className="relative group aspect-[0.75] rounded-xl overflow-hidden border border-white/10">
+                    <img src={url} alt={`Page ${idx + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = form.contentPages.filter((_, i) => i !== idx);
+                        updateField("contentPages", updated);
+                      }}
+                      className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full bg-red-500/80 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      &times;
+                    </button>
+                    <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/60 text-white/80 text-[10px]">
+                      {idx + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <label className="cursor-pointer px-4 py-2 rounded-xl bg-white/[0.08] border border-white/20 text-white/70 text-sm hover:bg-white/[0.12] transition-all">
+                Upload from device
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (!files || files.length === 0) return;
+                    const newUrls: string[] = [];
+                    let loaded = 0;
+                    for (const file of files) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        newUrls.push(ev.target?.result as string);
+                        loaded++;
+                        if (loaded === files.length) {
+                          updateField("contentPages", [...form.contentPages, ...newUrls]);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="hidden"
+                />
+              </label>
+              <span className="text-white/30 text-xs">or</span>
+              <div className="flex-1 flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Paste image URL..."
+                  className="flex-1 px-3 py-2 rounded-xl bg-white/[0.08] border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-purple-500/50"
+                  id="contentUrlInput"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.getElementById("contentUrlInput") as HTMLInputElement;
+                    const url = input?.value.trim();
+                    if (!url) return;
+                    updateField("contentPages", [...form.contentPages, url]);
+                    input.value = "";
+                  }}
+                  className="px-4 py-2 rounded-xl bg-white/[0.08] border border-white/20 text-white/70 text-sm hover:bg-white/[0.12] transition-all"
+                >
+                  Add
+                </button>
+              </div>
             </div>
           </div>
 
