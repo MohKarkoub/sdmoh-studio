@@ -173,8 +173,14 @@ export default function AdminPage() {
                     className="hidden"
                   />
                 </label>
-                {form.coverImage && form.coverImage.startsWith("data:") && (
-                  <span className="text-green-400 text-xs">Image loaded as base64</span>
+                {form.coverImage && (
+                  <button
+                    type="button"
+                    onClick={() => updateField("coverImage", "")}
+                    className="px-3 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-400 text-sm hover:bg-red-500/30 transition-all"
+                  >
+                    Delete
+                  </button>
                 )}
               </div>
               {form.coverImage && (
