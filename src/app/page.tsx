@@ -1,7 +1,6 @@
 "use client";
 import HeroSection from "@/components/HeroSection";
 import LaserFlow from "@/components/LaserFlow";
-import { books } from "@/data/books";
 import ChromaGrid from "@/components/ChromaGrid";
 import CircularGallery from "@/components/CircularGallery";
 import BookPreviewModal from "@/components/BookPreviewModal";
@@ -9,8 +8,10 @@ import ScrollFloat from "@/components/ScrollFloat";
 import ScrollReveal from "@/components/ScrollReveal";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Book } from "@/data/books";
+
+const BOOKS_JSON_URL = "https://raw.githubusercontent.com/MohKarkoub/sdmoh-studio/main/public/books.json";
 
 const galleryItems = [
   { image: "https://images.unsplash.com/photo-1734680878306-c8b076d5fde2?w=800&q=80", text: "Coloring Book" },
@@ -25,6 +26,15 @@ const galleryItems = [
 
 export default function HomePage() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(BOOKS_JSON_URL)
+      .then((r) => r.json())
+      .then((data) => { setBooks(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   const chromaItems = books.map((book) => ({
     image: book.coverImage,

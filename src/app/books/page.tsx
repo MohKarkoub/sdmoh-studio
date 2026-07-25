@@ -1,13 +1,21 @@
 "use client";
-import { books } from "@/data/books";
 import BookCard from "@/components/BookCard";
 import BookPreviewModal from "@/components/BookPreviewModal";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Book } from "@/data/books";
 
 export default function BooksPage() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("https://raw.githubusercontent.com/MohKarkoub/sdmoh-studio/main/public/books.json")
+      .then((r) => r.json())
+      .then((data) => { setBooks(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   return (
     <main className="min-h-screen pt-28 pb-24 px-6">
@@ -24,18 +32,24 @@ export default function BooksPage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {books.map((book, i) => (
-            <motion.div
-              key={book.id}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-            >
-              <BookCard book={book} onRead={setSelectedBook} />
-            </motion.div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {books.map((book, i) => (
+              <motion.div
+                key={book.id}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+              >
+                <BookCard book={book} onRead={setSelectedBook} />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       <BookPreviewModal book={selectedBook} onClose={() => setSelectedBook(null)} />
