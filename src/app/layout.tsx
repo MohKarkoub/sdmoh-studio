@@ -23,6 +23,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SDMoh Studio — Coloring Books for Relaxation & Creativity",
   description: "Discover bold and easy coloring books for adults, teens, and kids. Relax, unwind, and color your world with SDMoh Studio.",
+  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({
