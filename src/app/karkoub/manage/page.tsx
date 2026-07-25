@@ -4,6 +4,7 @@ import Link from "next/link";
 
 const ADMIN_PASSWORD = "@Karkoub8891#";
 const BOOKS_JSON_URL = "https://raw.githubusercontent.com/MohKarkoub/sdmoh-studio/main/public/books.json";
+const GITHUB_API = "https://api.github.com/repos/MohKarkoub/sdmoh-studio/contents/public/books.json";
 
 interface BookData {
   id: string;
@@ -22,11 +23,17 @@ export default function ManageBooksPage() {
   const [originalBooks, setOriginalBooks] = useState<BookData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [token, setToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     if (sessionStorage.getItem("karkoub_auth") === "true") {
       setAuthenticated(true);
     }
+    const savedToken = sessionStorage.getItem("github_token") || "";
+    setToken(savedToken);
   }, []);
 
   useEffect(() => {
@@ -48,17 +55,21 @@ export default function ManageBooksPage() {
     }
   }
 
+  function saveToken() {
+    sessionStorage.setItem("github_token", token);
+    setShowToken(false);
+  }
+
   const hasChanges = JSON.stringify(books) !== JSON.stringify(originalBooks);
 
-  function copyAndNotify(json: string) {
+  function copyToClipboard(json: string) {
     navigator.clipboard.writeText(json);
   }
 
   const toggleHidden = useCallback((id: string) => {
     setBooks((prev) => {
       const updated = prev.map((b) => (b.id === id ? { ...b, hidden: !b.hidden } : b));
-      const json = JSON.stringify(updated, null, 2);
-      copyAndNotify(json);
+      copyToClipboard(JSON.stringify(updated, null, 2));
       return updated;
     });
   }, []);
@@ -67,16 +78,62 @@ export default function ManageBooksPage() {
     if (!confirm("Delete this book?")) return;
     setBooks((prev) => {
       const updated = prev.filter((b) => b.id !== id);
-      const json = JSON.stringify(updated, null, 2);
-      copyAndNotify(json);
+      copyToClipboard(JSON.stringify(updated, null, 2));
       return updated;
     });
   }, []);
 
   const copyAll = useCallback(() => {
     const json = JSON.stringify(books, null, 2);
-    copyAndNotify(json);
+    copyToClipboard(json);
   }, [books]);
+
+  const saveToGitHub = useCallback(async () => {
+    if (!token) {
+      setShowToken(true);
+      return;
+    }
+    setSaving(true);
+    setSaveMsg(null);
+    try {
+      const shaRes = await fetch(GITHUB_API, {
+        headers: { Authorization: `token ${token}` },
+      });
+      if (!shaRes.ok) {
+        const err = await shaRes.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub API error: ${shaRes.status}`);
+      }
+      const shaData = await shaRes.json();
+      const sha = shaData.sha;
+
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(books, null, 2))));
+
+      const putRes = await fetch(GITHUB_API, {
+        method: "PUT",
+        headers: {
+          Authorization: `token ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: "Update books.json via Karkoub dashboard",
+          content,
+          sha,
+        }),
+      });
+
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        throw new Error(err.message || `GitHub API error: ${putRes.status}`);
+      }
+
+      setSaveMsg({ ok: true, text: "Saved to GitHub! Refresh the page to see changes." });
+      setOriginalBooks([...books]);
+    } catch (err: any) {
+      setSaveMsg({ ok: false, text: err.message || "Failed to save to GitHub" });
+    } finally {
+      setSaving(false);
+    }
+  }, [books, token]);
 
   const filtered = books.filter((b) =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -96,15 +153,8 @@ export default function ManageBooksPage() {
             className="w-full px-4 py-3 rounded-xl bg-white/[0.12] border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-purple-500/50"
           />
           {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button
-            type="submit"
-            className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-purple-600 text-white font-semibold transition-all hover:from-orange-400 hover:to-purple-500"
-          >
-            Login
-          </button>
-          <Link href="/karkoub" className="block text-center text-white/40 hover:text-white/70 text-sm font-body">
-            &larr; Back
-          </Link>
+          <button type="submit" className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-purple-600 text-white font-semibold transition-all hover:from-orange-400 hover:to-purple-500">Login</button>
+          <Link href="/karkoub" className="block text-center text-white/40 hover:text-white/70 text-sm font-body">&larr; Back</Link>
         </form>
       </main>
     );
@@ -124,17 +174,33 @@ export default function ManageBooksPage() {
               <p className="text-white/40 text-sm mt-1 font-body">{books.length} books &middot; {visibleCount} visible &middot; {books.length - visibleCount} hidden</p>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={copyAll}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-purple-600 text-white text-sm font-semibold transition-all hover:from-orange-400 hover:to-purple-500 hover:shadow-lg hover:shadow-purple-500/25 active:scale-[0.98]"
-              >
-                Copy All JSON
+              <button onClick={() => setShowToken(!showToken)} className="px-3 py-2 rounded-xl border border-white/10 text-white/50 text-xs hover:bg-white/5 transition-all">
+                {token ? "Token ✓" : "Set Token"}
               </button>
-              <Link href="/karkoub" className="text-white/40 hover:text-white/70 text-sm font-body transition-colors">
-                &larr; Back
-              </Link>
+              <Link href="/karkoub" className="text-white/40 hover:text-white/70 text-sm font-body transition-colors">&larr; Back</Link>
             </div>
           </div>
+
+          {showToken && (
+            <div className="mb-6 p-4 rounded-xl bg-white/[0.06] border border-white/10">
+              <label className="block text-white/60 text-xs mb-2 font-body">GitHub Token (repo scope)</label>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="ghp_... or github_pat_..."
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.08] border border-white/20 text-white placeholder-white/25 text-sm focus:outline-none focus:border-purple-500/50"
+                />
+                <button onClick={saveToken} className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-purple-600 text-white text-sm font-semibold">Save</button>
+              </div>
+              <p className="text-white/30 text-[11px] mt-2 font-body">
+                Create at{" "}
+                <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">github.com/settings/tokens</a>
+                {" "}(Fine-grained token with read/write access to sdmoh-studio repo)
+              </p>
+            </div>
+          )}
 
           <div className="relative mb-6">
             <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,69 +223,32 @@ export default function ManageBooksPage() {
             <div className="text-center py-20">
               <p className="text-white/40 text-lg font-body">{books.length === 0 ? "No books found" : "No books match your search"}</p>
               {books.length === 0 && (
-                <Link href="/karkoub/add" className="inline-block mt-4 text-purple-400 hover:text-purple-300 underline text-sm font-body">
-                  Add a book
-                </Link>
+                <Link href="/karkoub/add" className="inline-block mt-4 text-purple-400 hover:text-purple-300 underline text-sm font-body">Add a book</Link>
               )}
             </div>
           ) : (
             <div className="space-y-2">
               {filtered.map((book) => (
-                <div
-                  key={book.id}
-                  className="group flex items-center gap-4 p-4 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/20 transition-all"
-                >
+                <div key={book.id} className="group flex items-center gap-4 p-4 rounded-xl bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.08] hover:border-white/20 transition-all">
                   <div className="w-14 h-[3.25rem] rounded-lg overflow-hidden border border-white/10 shrink-0 bg-white/[0.04]">
-                    <img
-                      src={book.coverImage}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
+                    <img src={book.coverImage} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <Link
-                      href={`/karkoub/manage/${book.id}`}
-                      className="text-white text-sm font-medium hover:text-purple-400 transition-colors line-clamp-1"
-                    >
-                      {book.title}
-                    </Link>
+                    <Link href={`/karkoub/manage/${book.id}`} className="text-white text-sm font-medium hover:text-purple-400 transition-colors line-clamp-1">{book.title}</Link>
                     <div className="flex items-center gap-3 mt-1">
                       {book.price && <span className="text-white/40 text-xs font-body">{book.price}</span>}
-                      {book.asin && (
-                        <>
-                          <span className="text-white/20 text-xs">|</span>
-                          <span className="text-white/30 text-xs font-body font-mono">{book.asin}</span>
-                        </>
-                      )}
+                      {book.asin && <><span className="text-white/20 text-xs">|</span><span className="text-white/30 text-xs font-body font-mono">{book.asin}</span></>}
                       <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${book.hidden ? "bg-red-500/15 text-red-400" : "bg-green-500/15 text-green-400"}`}>
                         {book.hidden ? "Hidden" : "Visible"}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Link
-                      href={`/karkoub/manage/${book.id}`}
-                      className="px-3 py-1.5 rounded-lg bg-white/[0.08] border border-white/20 text-white/70 text-xs hover:bg-white/[0.12] transition-all"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => toggleHidden(book.id)}
-                      className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
-                        book.hidden
-                          ? "border-green-500/30 text-green-400 hover:bg-green-500/10"
-                          : "border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
-                      }`}
-                    >
+                    <Link href={`/karkoub/manage/${book.id}`} className="px-3 py-1.5 rounded-lg bg-white/[0.08] border border-white/20 text-white/70 text-xs hover:bg-white/[0.12] transition-all">Edit</Link>
+                    <button onClick={() => toggleHidden(book.id)} className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${book.hidden ? "border-green-500/30 text-green-400 hover:bg-green-500/10" : "border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"}`}>
                       {book.hidden ? "Show" : "Hide"}
                     </button>
-                    <button
-                      onClick={() => deleteBook(book.id)}
-                      className="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 text-xs hover:bg-red-500/10 transition-all"
-                    >
-                      Delete
-                    </button>
+                    <button onClick={() => deleteBook(book.id)} className="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 text-xs hover:bg-red-500/10 transition-all">Delete</button>
                   </div>
                 </div>
               ))}
@@ -228,6 +257,14 @@ export default function ManageBooksPage() {
         </div>
       </div>
 
+      {saveMsg && (
+        <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl shadow-2xl backdrop-blur-xl text-sm max-w-lg text-center ${
+          saveMsg.ok ? "bg-green-500/20 border border-green-500/40 text-green-400" : "bg-red-500/20 border border-red-500/40 text-red-400"
+        }`}>
+          {saveMsg.text}
+        </div>
+      )}
+
       {hasChanges && (
         <div className="fixed bottom-0 left-0 right-0 z-50">
           <div className="max-w-5xl mx-auto px-6 pb-6">
@@ -235,29 +272,31 @@ export default function ManageBooksPage() {
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
-                  <p className="text-yellow-400/80 text-sm font-body">
-                    Unsaved changes &mdash; modifications are local only
-                  </p>
+                  <p className="text-yellow-400/80 text-sm font-body">Unsaved changes &mdash; modifications are local only</p>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={saveToGitHub}
+                    disabled={saving}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold hover:from-green-400 hover:to-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? "Saving..." : "Save to GitHub"}
+                  </button>
                   <a
                     href="https://github.com/MohKarkoub/sdmoh-studio/edit/main/public/books.json"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-xl bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-sm font-medium hover:bg-yellow-500/25 transition-all"
+                    className="px-4 py-2 rounded-xl bg-white/[0.08] border border-white/20 text-white/70 text-sm hover:bg-white/[0.12] transition-all"
                   >
-                    Open GitHub
+                    Manual Edit
                   </a>
-                  <button
-                    onClick={copyAll}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-purple-600 text-white text-sm font-semibold hover:from-orange-400 hover:to-purple-500 transition-all"
-                  >
-                    Copy JSON &amp; Save
+                  <button onClick={copyAll} className="px-4 py-2 rounded-xl bg-white/[0.08] border border-white/20 text-white/70 text-sm hover:bg-white/[0.12] transition-all">
+                    Copy JSON
                   </button>
                 </div>
               </div>
               <p className="mt-2 text-yellow-500/40 text-[11px] font-body">
-                After copying, go to GitHub, select all, and paste to replace the content
+                {token ? "Ready to save directly to GitHub" : "Set a GitHub token above for one-click saving"}
               </p>
             </div>
           </div>
