@@ -133,9 +133,8 @@ export default function ManageBooksPage() {
         throw new Error(err.message || `GitHub API error: ${putRes.status}`);
       }
 
-      setSaveMsg({ ok: true, text: "Saved to GitHub! Refreshing data..." });
+      setSaveMsg({ ok: true, text: "Saved to GitHub! Changes are live." });
       setOriginalBooks([...books]);
-      setTimeout(() => loadBooks(), 1500);
     } catch (err: any) {
       setSaveMsg({ ok: false, text: err.message || "Failed to save to GitHub" });
     } finally {
