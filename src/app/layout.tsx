@@ -3,8 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CursorGridBackground from "@/components/CursorGridBackground";
 import MobileDock from "@/components/MobileDock";
+import dynamic from "next/dynamic";
+
+const CursorGridBackground = dynamic(
+  () => import("@/components/CursorGridBackground")
+);
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +38,9 @@ export default function RootLayout({
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Black+And+White+Picture&family=Akronim&family=Gamja+Flower&display=swap" rel="stylesheet" />
       </head>
-      <body className="min-h-full flex flex-col bg-[#0a0a0a]">
+      <body className="min-h-full flex flex-col bg-[#0a0a0a] overflow-x-hidden">
         <Header />
-        <div className="flex-1 relative z-10 pb-20 md:pb-0">
+        <div className="flex-1 relative z-10 pb-24 md:pb-0">
           <CursorGridBackground />
           {children}
         </div>
