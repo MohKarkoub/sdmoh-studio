@@ -35,7 +35,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main>
+    <main className="overflow-hidden pb-24">
       <HeroSection />
 
       <div className="relative w-full overflow-hidden" style={{ height: "500px", marginTop: "-275px", paddingTop: 50 }}>
@@ -101,7 +101,7 @@ export default function HomePage() {
             Explore Our World
           </ScrollFloat>
           <ScrollReveal direction="fade" delay={0.3}>
-            <p className="text-white/50 max-w-x2 mx-auto font-body text-lg md:text-x1">
+            <p className="text-white/50 max-w-2xl mx-auto font-body text-lg md:text-xl">
               From black & white outlines to vibrant colored pages — discover the magic of coloring
             </p>
           </ScrollReveal>

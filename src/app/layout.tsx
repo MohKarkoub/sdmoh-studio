@@ -40,7 +40,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-[#0a0a0a] overflow-x-hidden">
         <Header />
-        <div className="flex-1 relative z-10 pb-24 md:pb-0">
+        <div className="flex-1 relative z-10 overflow-hidden">
           <CursorGridBackground />
           {children}
         </div>
