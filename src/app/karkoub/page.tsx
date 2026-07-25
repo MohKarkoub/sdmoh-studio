@@ -10,11 +10,15 @@ export default function KarkoubDashboard() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [stats, setStats] = useState({ total: 0, visible: 0, hidden: 0 });
+  const [token, setToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem("karkoub_auth") === "true") {
       setAuthenticated(true);
     }
+    const savedToken = sessionStorage.getItem("github_token") || "";
+    setToken(savedToken);
   }, []);
 
   useEffect(() => {
@@ -99,10 +103,26 @@ export default function KarkoubDashboard() {
               <h1 className="text-5xl text-white font-display">Karkoub</h1>
               <p className="text-white/40 mt-2 font-body">Manage your coloring book portfolio</p>
             </div>
-            <Link href="/" className="text-white/30 hover:text-white/60 text-sm font-body transition-colors">
-              &larr; Home
-            </Link>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setShowToken(!showToken)} className="px-3 py-2 rounded-xl border border-white/10 text-white/50 text-xs hover:bg-white/5 transition-all">
+                {token ? "Token ✓" : "Set Token"}
+              </button>
+              <Link href="/" className="text-white/30 hover:text-white/60 text-sm font-body transition-colors">&larr; Home</Link>
+            </div>
           </div>
+
+          {showToken && (
+            <div className="mb-8 p-4 rounded-xl bg-white/[0.06] border border-white/10">
+              <label className="block text-white/60 text-xs mb-2 font-body">GitHub Token (repo scope)</label>
+              <div className="flex gap-2">
+                <input type="password" value={token} onChange={(e) => setToken(e.target.value)} placeholder="ghp_... or github_pat_..." className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.08] border border-white/20 text-white placeholder-white/25 text-sm focus:outline-none focus:border-purple-500/50" />
+                <button onClick={() => { sessionStorage.setItem("github_token", token); setShowToken(false); }} className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-purple-600 text-white text-sm font-semibold">Save</button>
+              </div>
+              <p className="text-white/30 text-[11px] mt-2 font-body">
+                Token is saved in your browser and shared across all Karkoub pages
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
             {statCards.map((s) => (
