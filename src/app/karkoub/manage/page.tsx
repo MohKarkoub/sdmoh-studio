@@ -40,10 +40,36 @@ export default function ManageBooksPage() {
 
   function loadBooks() {
     setLoading(true);
-    fetch(rawUrl())
+    const doFetch = (url: string, isRaw = true) =>
+      fetch(url)
+        .then((r) => r.json())
+        .then((data) => {
+          const books = isRaw ? data : JSON.parse(decodeURIComponent(escape(atob(data.content))));
+          setBooks(books);
+          setOriginalBooks(books);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+
+    const savedToken = sessionStorage.getItem("github_token") || "";
+    if (savedToken) {
+      doFetch(GITHUB_API, false);
+    } else {
+      doFetch(rawUrl());
+    }
+  }
+
+  function refreshFromAPI() {
+    const t = sessionStorage.getItem("github_token") || token;
+    if (!t) return;
+    fetch(GITHUB_API, { headers: { Authorization: `token ${t}` } })
       .then((r) => r.json())
-      .then((data) => { setBooks(data); setOriginalBooks(data); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then((data) => {
+        const books = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        setBooks(books);
+        setOriginalBooks(books);
+      })
+      .catch(() => {});
   }
 
   useEffect(() => {
@@ -65,6 +91,7 @@ export default function ManageBooksPage() {
   function saveToken() {
     sessionStorage.setItem("github_token", token);
     setShowToken(false);
+    loadBooks();
   }
 
   const hasChanges = JSON.stringify(books) !== JSON.stringify(originalBooks);
@@ -135,6 +162,7 @@ export default function ManageBooksPage() {
 
       setSaveMsg({ ok: true, text: "Saved to GitHub! Changes are live." });
       setOriginalBooks([...books]);
+      refreshFromAPI();
     } catch (err: any) {
       setSaveMsg({ ok: false, text: err.message || "Failed to save to GitHub" });
     } finally {
