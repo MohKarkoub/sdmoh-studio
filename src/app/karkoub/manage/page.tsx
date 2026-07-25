@@ -3,8 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 
 const ADMIN_PASSWORD = "@Karkoub8891#";
-const BOOKS_JSON_URL = "https://raw.githubusercontent.com/MohKarkoub/sdmoh-studio/main/public/books.json";
+const RAW_BASE = "https://raw.githubusercontent.com/MohKarkoub/sdmoh-studio/main/public/books.json";
 const GITHUB_API = "https://api.github.com/repos/MohKarkoub/sdmoh-studio/contents/public/books.json";
+
+function rawUrl() { return RAW_BASE + "?t=" + Date.now(); }
 
 interface BookData {
   id: string;
@@ -36,12 +38,17 @@ export default function ManageBooksPage() {
     setToken(savedToken);
   }, []);
 
-  useEffect(() => {
-    if (!authenticated) return;
-    fetch(BOOKS_JSON_URL)
+  function loadBooks() {
+    setLoading(true);
+    fetch(rawUrl())
       .then((r) => r.json())
       .then((data) => { setBooks(data); setOriginalBooks(data); setLoading(false); })
       .catch(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    if (!authenticated) return;
+    loadBooks();
   }, [authenticated]);
 
   function handleLogin(e: React.FormEvent) {
@@ -126,8 +133,9 @@ export default function ManageBooksPage() {
         throw new Error(err.message || `GitHub API error: ${putRes.status}`);
       }
 
-      setSaveMsg({ ok: true, text: "Saved to GitHub! Refresh the page to see changes." });
+      setSaveMsg({ ok: true, text: "Saved to GitHub! Refreshing data..." });
       setOriginalBooks([...books]);
+      setTimeout(() => loadBooks(), 1500);
     } catch (err: any) {
       setSaveMsg({ ok: false, text: err.message || "Failed to save to GitHub" });
     } finally {
@@ -296,7 +304,7 @@ export default function ManageBooksPage() {
                 </div>
               </div>
               <p className="mt-2 text-yellow-500/40 text-[11px] font-body">
-                {token ? "Ready to save directly to GitHub" : "Set a GitHub token above for one-click saving"}
+                {token ? "Save is instant. The site may take ~1 min to reflect changes (CDN cache)." : "Set a GitHub token above for one-click saving"}
               </p>
             </div>
           </div>
