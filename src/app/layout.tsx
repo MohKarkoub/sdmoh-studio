@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CursorGridBackground from "@/components/CursorGridBackground";
+import MobileDock from "@/components/MobileDock";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,11 +36,12 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-[#0a0a0a]">
         <Header />
-        <div className="flex-1 relative z-10">
+        <div className="flex-1 relative z-10 pb-20 md:pb-0">
           <CursorGridBackground />
           {children}
         </div>
         <Footer />
+        <MobileDock />
       </body>
     </html>
   );

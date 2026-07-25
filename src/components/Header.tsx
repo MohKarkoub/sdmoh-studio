@@ -24,7 +24,7 @@ export default function Header() {
             SDMoh Studio
           </span>
         </Link>
-        <nav className="flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-1">
           {navLinks.map(({ href, label, icon }) => {
             const isActive = pathname === href;
             return (
