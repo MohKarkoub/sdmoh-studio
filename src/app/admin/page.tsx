@@ -151,8 +151,44 @@ export default function AdminPage() {
               <input
                 value={form.coverImage}
                 onChange={(e) => updateField("coverImage", e.target.value)}
+                placeholder="https://..."
                 className="w-full px-4 py-3 rounded-xl bg-white/[0.12] border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-purple-500/50"
               />
+              <div className="mt-2 flex items-center gap-3">
+                <label className="cursor-pointer px-4 py-2 rounded-xl bg-white/[0.08] border border-white/20 text-white/70 text-sm hover:bg-white/[0.12] transition-all">
+                  Upload from device
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        const dataUrl = ev.target?.result as string;
+                        updateField("coverImage", dataUrl);
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                    className="hidden"
+                  />
+                </label>
+                {form.coverImage && form.coverImage.startsWith("data:") && (
+                  <span className="text-green-400 text-xs">Image loaded as base64</span>
+                )}
+              </div>
+              {form.coverImage && (
+                <div className="mt-3 w-32 h-44 rounded-xl overflow-hidden border border-white/10">
+                  <img
+                    src={form.coverImage}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
             </div>
             <div className="md:col-span-2">
               <label className="block text-white/60 mb-1 text-sm">Description</label>
