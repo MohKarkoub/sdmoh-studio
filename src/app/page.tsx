@@ -1,7 +1,7 @@
 "use client";
 import HeroSection from "@/components/HeroSection";
 import LaserFlow from "@/components/LaserFlow";
-import ChromaGrid from "@/components/ChromaGrid";
+import BookCard from "@/components/BookCard";
 import CircularGallery from "@/components/CircularGallery";
 import BookPreviewModal from "@/components/BookPreviewModal";
 import ScrollFloat from "@/components/ScrollFloat";
@@ -36,15 +36,6 @@ export default function HomePage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const chromaItems = books.map((book) => ({
-    image: book.coverImage,
-    title: book.title.split(":")[0],
-    subtitle: "Coloring Book",
-    borderColor: "#f97316",
-    gradient: "linear-gradient(145deg, #f97316, #000)",
-    url: book.amazonLink,
-  }));
-
   return (
     <main>
       <HeroSection />
@@ -71,11 +62,19 @@ export default function HomePage() {
               Bold and easy designs for everyone — from cozy animals to playful cats and relaxing ocean scenes
             </p>
           </ScrollReveal>
-          <ScrollReveal direction="up" delay={0.2}>
-            <div className="flex justify-center">
-              <ChromaGrid items={chromaItems.slice(0, 3)} columns={3} radius={250} />
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
             </div>
-          </ScrollReveal>
+          ) : (
+            <ScrollReveal direction="up" delay={0.2}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                {books.slice(0, 3).map((book, i) => (
+                  <BookCard key={book.id} book={book} onRead={setSelectedBook} />
+                ))}
+              </div>
+            </ScrollReveal>
+          )}
           <ScrollReveal direction="up" delay={0.4} className="text-center mt-12">
             <Link
               href="/books"
