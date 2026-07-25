@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_PASSWORD = "@Karkoub8891#";
 
 interface BookForm {
   title: string;
@@ -17,6 +17,7 @@ interface BookForm {
   isbn: string;
   price: string;
   contentPages: string[];
+  hidden: boolean;
 }
 
 const emptyForm: BookForm = {
@@ -32,9 +33,10 @@ const emptyForm: BookForm = {
   isbn: "",
   price: "",
   contentPages: [],
+  hidden: false,
 };
 
-export default function AdminPage() {
+export default function AddBookPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -42,7 +44,7 @@ export default function AdminPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem("admin_auth") === "true") {
+    if (sessionStorage.getItem("karkoub_auth") === "true") {
       setAuthenticated(true);
     }
   }, []);
@@ -51,7 +53,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
       setAuthenticated(true);
-      sessionStorage.setItem("admin_auth", "true");
+      sessionStorage.setItem("karkoub_auth", "true");
       setError("");
     } else {
       setError("Wrong password");
@@ -80,7 +82,7 @@ export default function AdminPage() {
     });
   }
 
-  function updateField(field: keyof BookForm, value: string | string[]) {
+  function updateField(field: keyof BookForm, value: string | boolean | string[]) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
@@ -88,7 +90,7 @@ export default function AdminPage() {
     return (
       <main className="min-h-screen flex items-center justify-center px-6">
         <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
-          <h1 className="text-3xl text-white font-display text-center mb-6">Admin Login</h1>
+          <h1 className="text-3xl text-white font-display text-center mb-6">Karkoub</h1>
           <input
             type="password"
             value={password}
@@ -103,8 +105,8 @@ export default function AdminPage() {
           >
             Login
           </button>
-          <Link href="/" className="block text-center text-white/40 hover:text-white/70 text-sm font-body">
-            &larr; Back to Home
+          <Link href="/karkoub" className="block text-center text-white/40 hover:text-white/70 text-sm font-body">
+            &larr; Back
           </Link>
         </form>
       </main>
@@ -115,9 +117,9 @@ export default function AdminPage() {
     <main className="min-h-screen pt-28 pb-24 px-6">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl text-white font-display">Add New Book</h1>
-          <Link href="/" className="text-white/40 hover:text-white/70 text-sm font-body">
-            &larr; Home
+          <h1 className="text-4xl text-white font-display">Karkoub / Add Book</h1>
+          <Link href="/karkoub" className="text-white/40 hover:text-white/70 text-sm font-body">
+            &larr; Back
           </Link>
         </div>
 
@@ -258,6 +260,17 @@ export default function AdminPage() {
                 onChange={(e) => updateField("isbn", e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-white/[0.12] border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-purple-500/50"
               />
+            </div>
+            <div className="md:col-span-2">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.hidden}
+                  onChange={(e) => updateField("hidden", e.target.checked)}
+                  className="w-4 h-4 rounded border-white/20 bg-white/[0.08] accent-purple-600"
+                />
+                <span className="text-white/60 text-sm">Hidden (won&apos;t appear on website)</span>
+              </label>
             </div>
           </div>
 

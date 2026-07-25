@@ -4,6 +4,7 @@ import BookPreviewModal from "@/components/BookPreviewModal";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import type { Book } from "@/data/books";
+import { fetchBooks } from "@/data/books";
 
 export default function BooksPage() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -11,8 +12,7 @@ export default function BooksPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("https://raw.githubusercontent.com/MohKarkoub/sdmoh-studio/main/public/books.json")
-      .then((r) => r.json())
+    fetchBooks()
       .then((data) => { setBooks(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);

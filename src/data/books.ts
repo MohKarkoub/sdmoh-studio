@@ -12,14 +12,16 @@ export interface Book {
   isbn: string;
   price: string;
   contentPages: string[];
+  hidden?: boolean;
 }
 
 export const BOOKS_JSON_URL = "https://raw.githubusercontent.com/MohKarkoub/sdmoh-studio/main/public/books.json";
 
-export async function fetchBooks(): Promise<Book[]> {
+export async function fetchBooks(includeHidden = false): Promise<Book[]> {
   const res = await fetch(BOOKS_JSON_URL);
   if (!res.ok) throw new Error("Failed to fetch books");
-  return res.json();
+  const books: Book[] = await res.json();
+  return includeHidden ? books : books.filter((b) => !b.hidden);
 }
 
 export async function fetchBookById(id: string): Promise<Book | null> {

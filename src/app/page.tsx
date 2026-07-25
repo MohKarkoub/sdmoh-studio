@@ -10,8 +10,7 @@ import ScrollReveal from "@/components/ScrollReveal";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import type { Book } from "@/data/books";
-
-const BOOKS_JSON_URL = "https://raw.githubusercontent.com/MohKarkoub/sdmoh-studio/main/public/books.json";
+import { fetchBooks } from "@/data/books";
 
 const galleryItems = [
   { image: "https://images.unsplash.com/photo-1734680878306-c8b076d5fde2?w=800&q=80", text: "Coloring Book" },
@@ -30,8 +29,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(BOOKS_JSON_URL)
-      .then((r) => r.json())
+    fetchBooks()
       .then((data) => { setBooks(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
@@ -44,7 +42,7 @@ export default function HomePage() {
         <LaserFlow
           horizontalBeamOffset={0.0}
           verticalBeamOffset={0.0}
-          color="#437AB3"
+          color="#04AFFF"
           flowSpeed={0.35}
           fogIntensity={0.5}
           fogScale={-0.6}
