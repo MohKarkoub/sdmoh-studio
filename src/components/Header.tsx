@@ -15,15 +15,18 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
       <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-orange-400/40 via-purple-400/40 via-cyan-400/40 to-transparent" />
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between relative">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="h-10 w-10 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-orange-400/60 transition-all duration-500 group-hover:shadow-lg group-hover:shadow-orange-500/20">
             <img src="/logo.png" alt="SDMoh Studio" className="h-full w-full object-cover" />
           </div>
-          <span className="text-xl bg-gradient-to-r from-orange-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent font-display-alt group-hover:scale-105 transition-transform duration-300">
+          <span className="hidden md:inline text-xl bg-gradient-to-r from-orange-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent font-display-alt group-hover:scale-105 transition-transform duration-300">
             SDMoh Studio
           </span>
         </Link>
+        <span className="md:hidden absolute left-1/2 -translate-x-1/2 text-xl bg-gradient-to-r from-orange-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent font-display-alt">
+          SDMoh Studio
+        </span>
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map(({ href, label, icon }) => {
             const isActive = pathname === href;
