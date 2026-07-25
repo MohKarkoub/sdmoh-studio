@@ -73,9 +73,14 @@ export default function BookCard({ book, onRead }: BookCardProps) {
           />
         </div>
         <div className="p-5">
-          <h3 className="text-white/90 line-clamp-2 leading-relaxed mb-4 font-body text-base">
+          <h3 className="text-white/90 line-clamp-2 leading-relaxed mb-2 font-body text-base">
             {book.title}
           </h3>
+          {book.price && (
+            <p className="text-white/60 font-body text-sm mb-4">
+              {book.price}
+            </p>
+          )}
           <div className="flex flex-col gap-2">
             <a
               href={book.amazonLink}

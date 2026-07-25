@@ -10,6 +10,7 @@ export interface Book {
   publicationDate: string;
   dimensions: string;
   isbn: string;
+  price: string;
   contentPages: string[];
 }
 
