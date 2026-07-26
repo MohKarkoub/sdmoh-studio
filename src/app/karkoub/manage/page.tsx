@@ -150,36 +150,21 @@ export default function ManageBooksPage() {
     setSaving(true);
     setSaveMsg(null);
     try {
-      const shaRes = await fetch(GITHUB_API, {
-        headers: { Authorization: `token ${token}` },
-      });
-      if (!shaRes.ok) {
-        const err = await shaRes.json().catch(() => ({}));
-        throw new Error(err.message || `GitHub API error: ${shaRes.status}`);
-      }
-      const shaData = await shaRes.json();
-      const sha = shaData.sha;
-
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify(books, null, 2))));
-
-      const putRes = await fetch(GITHUB_API, {
-        method: "PUT",
-        headers: {
-          Authorization: `token ${token}`,
-          "Content-Type": "application/json",
-        },
+      const res = await fetch("/api/books/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          books: books,
+          token,
           message: "Update books.json via Karkoub dashboard",
-          content,
-          sha,
         }),
       });
-
-      if (!putRes.ok) {
-        const err = await putRes.json().catch(() => ({}));
-        throw new Error(err.message || `GitHub API error: ${putRes.status}`);
+      const data = await res.json();
+      if (!res.ok) {
+        const json = JSON.stringify(books, null, 2);
+        navigator.clipboard.writeText(json);
+        throw new Error(data.error + " — JSON copied to clipboard.");
       }
-
       setSaveMsg({ ok: true, text: "Saved to GitHub! Changes are live." });
       setOriginalBooks([...books]);
       refreshFromAPI();

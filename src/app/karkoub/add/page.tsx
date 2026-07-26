@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 const ADMIN_PASSWORD = "@Karkoub8891#";
-const GITHUB_API = "https://api.github.com/repos/MohKarkoub/sdmoh-studio/contents/public/books.json";
 
 interface BookForm {
   title: string;
@@ -115,48 +114,21 @@ export default function AddBookPage() {
     setSaving(true);
     setSaveMsg(null);
     try {
-      const shaRes = await fetch(GITHUB_API, {
-        headers: { Authorization: `token ${token}` },
-      });
-      if (!shaRes.ok) {
-        const err = await shaRes.json().catch(() => ({}));
-        const json = JSON.stringify(buildBook(), null, 2);
-        navigator.clipboard.writeText(json);
-        if (shaRes.status === 401 || shaRes.status === 403) {
-          throw new Error("GitHub token invalid or expired. JSON copied to clipboard — paste it manually into books.json and commit.");
-        }
-        throw new Error(err.message || `GitHub API error: ${shaRes.status}`);
-      }
-      const shaData = await shaRes.json();
-      const sha = shaData.sha;
-      const raw = shaData.content.replace(/\s/g, "");
-      const currentBooks = JSON.parse(decodeURIComponent(escape(atob(raw))));
-      currentBooks.push(buildBook());
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify(currentBooks, null, 2))));
-
-      const putRes = await fetch(GITHUB_API, {
-        method: "PUT",
-        headers: {
-          Authorization: `token ${token}`,
-          "Content-Type": "application/json",
-        },
+      const res = await fetch("/api/books/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          books: buildBook(),
+          token,
           message: `Add book: ${form.title}`,
-          content,
-          sha,
         }),
       });
-
-      if (!putRes.ok) {
-        const err = await putRes.json().catch(() => ({}));
-        const json = JSON.stringify(currentBooks, null, 2);
+      const data = await res.json();
+      if (!res.ok) {
+        const json = JSON.stringify(buildBook(), null, 2);
         navigator.clipboard.writeText(json);
-        if (putRes.status === 401 || putRes.status === 403) {
-          throw new Error("Token missing write permission. JSON copied to clipboard — paste it into books.json and commit.");
-        }
-        throw new Error(err.message || `GitHub API error: ${putRes.status}`);
+        throw new Error(data.error + " — JSON copied to clipboard; paste into books.json and commit manually.");
       }
-
       setSaveMsg({ ok: true, text: "Book added and saved to GitHub! Refresh the site to see it." });
       setForm(emptyForm);
     } catch (err: any) {
