@@ -120,14 +120,19 @@ export default function AddBookPage() {
       });
       if (!shaRes.ok) {
         const err = await shaRes.json().catch(() => ({}));
+        const json = JSON.stringify(buildBook(), null, 2);
+        navigator.clipboard.writeText(json);
+        if (shaRes.status === 401 || shaRes.status === 403) {
+          throw new Error("GitHub token invalid or expired. JSON copied to clipboard — paste it manually into books.json and commit.");
+        }
         throw new Error(err.message || `GitHub API error: ${shaRes.status}`);
       }
       const shaData = await shaRes.json();
       const sha = shaData.sha;
-      const currentContent = decodeURIComponent(escape(atob(shaData.content)));
-      const books = JSON.parse(currentContent);
-      books.push(buildBook());
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify(books, null, 2))));
+      const raw = shaData.content.replace(/\s/g, "");
+      const currentBooks = JSON.parse(decodeURIComponent(escape(atob(raw))));
+      currentBooks.push(buildBook());
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(currentBooks, null, 2))));
 
       const putRes = await fetch(GITHUB_API, {
         method: "PUT",
@@ -144,6 +149,11 @@ export default function AddBookPage() {
 
       if (!putRes.ok) {
         const err = await putRes.json().catch(() => ({}));
+        const json = JSON.stringify(currentBooks, null, 2);
+        navigator.clipboard.writeText(json);
+        if (putRes.status === 401 || putRes.status === 403) {
+          throw new Error("Token missing write permission. JSON copied to clipboard — paste it into books.json and commit.");
+        }
         throw new Error(err.message || `GitHub API error: ${putRes.status}`);
       }
 

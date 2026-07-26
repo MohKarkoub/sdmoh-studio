@@ -298,7 +298,7 @@ export default function ManageBooksPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-2 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     <Link href={`/karkoub/manage/${book.id}`} className="px-3 py-1.5 rounded-lg bg-white/[0.08] border border-white/20 text-white/70 text-xs hover:bg-white/[0.12] transition-all">Edit</Link>
                     <button onClick={() => toggleHidden(book.id)} className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${book.hidden ? "border-green-500/30 text-green-400 hover:bg-green-500/10" : "border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"}`}>
                       {book.hidden ? "Show" : "Hide"}
