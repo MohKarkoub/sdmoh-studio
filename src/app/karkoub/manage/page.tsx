@@ -34,14 +34,14 @@ export default function ManageBooksPage() {
     if (sessionStorage.getItem("karkoub_auth") === "true") {
       setAuthenticated(true);
     }
-    const savedToken = sessionStorage.getItem("github_token") || "";
+    const savedToken = (sessionStorage.getItem("github_token") || "").trim();
     setToken(savedToken);
   }, []);
 
   async function loadBooks() {
     setLoading(true);
     try {
-      const savedToken = sessionStorage.getItem("github_token") || "";
+      const savedToken = (sessionStorage.getItem("github_token") || "").trim();
       let data: BookData[];
       if (savedToken) {
         const res = await fetch(GITHUB_API, { headers: { Authorization: `token ${savedToken}` } });
@@ -72,7 +72,7 @@ export default function ManageBooksPage() {
 
   async function refreshFromAPI() {
     try {
-      const t = sessionStorage.getItem("github_token") || token;
+      const t = (sessionStorage.getItem("github_token") || token).trim();
       if (t) {
         const res = await fetch(GITHUB_API, { headers: { Authorization: `token ${t}` } });
         if (res.ok) {
@@ -109,7 +109,8 @@ export default function ManageBooksPage() {
   }
 
   function saveToken() {
-    sessionStorage.setItem("github_token", token);
+    sessionStorage.setItem("github_token", token.trim());
+    setToken(token.trim());
     setShowToken(false);
     loadBooks();
   }
@@ -228,7 +229,7 @@ export default function ManageBooksPage() {
                 <input
                   type="password"
                   value={token}
-                  onChange={(e) => setToken(e.target.value)}
+                  onChange={(e) => setToken(e.target.value.trim())}
                   placeholder="ghp_... or github_pat_..."
                   className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.08] border border-white/20 text-white placeholder-white/25 text-sm focus:outline-none focus:border-purple-500/50"
                 />
