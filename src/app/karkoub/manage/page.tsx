@@ -47,7 +47,7 @@ export default function ManageBooksPage() {
         const res = await fetch(GITHUB_API, { headers: { Authorization: `token ${savedToken}` } });
         if (res.ok) {
           const json = await res.json();
-          data = JSON.parse(decodeURIComponent(escape(atob(json.content))));
+          data = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\s/g, '')))));
         } else {
           throw new Error("GitHub API error");
         }
@@ -77,8 +77,9 @@ export default function ManageBooksPage() {
         const res = await fetch(GITHUB_API, { headers: { Authorization: `token ${t}` } });
         if (res.ok) {
           const json = await res.json();
-          setBooks(JSON.parse(decodeURIComponent(escape(atob(json.content)))));
-          setOriginalBooks(JSON.parse(decodeURIComponent(escape(atob(json.content)))));
+          const parsed = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\s/g, '')))));
+          setBooks(parsed);
+          setOriginalBooks(parsed);
           return;
         }
       }
