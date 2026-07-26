@@ -38,38 +38,57 @@ export default function ManageBooksPage() {
     setToken(savedToken);
   }, []);
 
-  function loadBooks() {
+  async function loadBooks() {
     setLoading(true);
-    const savedToken = sessionStorage.getItem("github_token") || "";
-    if (savedToken) {
-      fetch(GITHUB_API, { headers: { Authorization: `token ${savedToken}` } })
-        .then((r) => r.json())
-        .then((data) => {
-          const books = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-          setBooks(books);
-          setOriginalBooks(books);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    } else {
-      fetch(rawUrl())
-        .then((r) => r.json())
-        .then((data) => { setBooks(data); setOriginalBooks(data); setLoading(false); })
-        .catch(() => setLoading(false));
+    try {
+      const savedToken = sessionStorage.getItem("github_token") || "";
+      let data: BookData[];
+      if (savedToken) {
+        const res = await fetch(GITHUB_API, { headers: { Authorization: `token ${savedToken}` } });
+        if (res.ok) {
+          const json = await res.json();
+          data = JSON.parse(decodeURIComponent(escape(atob(json.content))));
+        } else {
+          throw new Error("GitHub API error");
+        }
+      } else {
+        throw new Error("No token");
+      }
+      setBooks(data);
+      setOriginalBooks(data);
+    } catch {
+      try {
+        const res = await fetch(rawUrl());
+        if (res.ok) {
+          const data = await res.json();
+          setBooks(data);
+          setOriginalBooks(data);
+        }
+      } catch {}
+    } finally {
+      setLoading(false);
     }
   }
 
-  function refreshFromAPI() {
-    const t = sessionStorage.getItem("github_token") || token;
-    if (!t) return;
-    fetch(GITHUB_API, { headers: { Authorization: `token ${t}` } })
-      .then((r) => r.json())
-      .then((data) => {
-        const books = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        setBooks(books);
-        setOriginalBooks(books);
-      })
-      .catch(() => {});
+  async function refreshFromAPI() {
+    try {
+      const t = sessionStorage.getItem("github_token") || token;
+      if (t) {
+        const res = await fetch(GITHUB_API, { headers: { Authorization: `token ${t}` } });
+        if (res.ok) {
+          const json = await res.json();
+          setBooks(JSON.parse(decodeURIComponent(escape(atob(json.content)))));
+          setOriginalBooks(JSON.parse(decodeURIComponent(escape(atob(json.content)))));
+          return;
+        }
+      }
+      const res = await fetch(rawUrl());
+      if (res.ok) {
+        const data = await res.json();
+        setBooks(data);
+        setOriginalBooks(data);
+      }
+    } catch {}
   }
 
   useEffect(() => {
