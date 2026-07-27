@@ -1,0 +1,8 @@
+{
+  "name": "SDMoh Studio",
+  "description": "Discover bold and easy coloring books for adults, teens, and kids.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

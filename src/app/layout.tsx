@@ -21,9 +21,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SDMoh Studio — Coloring Books for Relaxation & Creativity",
+  title: {
+    default: "SDMoh Studio — Coloring Books for Relaxation & Creativity",
+    template: "%s | SDMoh Studio",
+  },
   description: "Discover bold and easy coloring books for adults, teens, and kids. Relax, unwind, and color your world with SDMoh Studio.",
   icons: { icon: "/logo.png" },
+  keywords: ["coloring books", "bold and easy coloring book", "adult coloring books", "stress relief coloring", "cute cat coloring book", "SDMoh Studio", "KDP coloring books"],
+  openGraph: {
+    title: "SDMoh Studio — Coloring Books for Relaxation & Creativity",
+    description: "Discover bold and easy coloring books for adults, teens, and kids. Relax, unwind, and color your world with SDMoh Studio.",
+    siteName: "SDMoh Studio",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SDMoh Studio — Coloring Books for Relaxation & Creativity",
+    description: "Discover bold and easy coloring books for adults, teens, and kids.",
+  },
 };
 
 export default function RootLayout({
@@ -37,6 +52,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var cur=window.fetch;function g(){return cur}function s(v){cur=v}var p=typeof Window!=='undefined'&&Window.prototype;if(p){try{Object.defineProperty(p,'fetch',{get:g,set:s,configurable:true,enumerable:true})}catch(e){}}try{Object.defineProperty(window,'fetch',{get:g,set:s,configurable:true,enumerable:true})}catch(e){}}catch(e){}})()`,
+          }}
+        />
         <link href="https://fonts.googleapis.com/css2?family=Black+And+White+Picture&family=Akronim&family=Gamja+Flower&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-full flex flex-col bg-[#0a0a0a] overflow-x-hidden">

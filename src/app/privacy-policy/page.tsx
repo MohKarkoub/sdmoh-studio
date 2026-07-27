@@ -1,5 +1,10 @@
-"use client";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | SDMoh Studio",
+  description: "Read the SDMoh Studio Privacy Policy to understand how we collect, use, and protect your information.",
+};
 
 export default function PrivacyPolicy() {
   return (

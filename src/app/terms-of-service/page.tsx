@@ -1,5 +1,10 @@
-"use client";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Terms of Service | SDMoh Studio",
+  description: "Read the Terms of Service for using the SDMoh Studio website and purchasing our coloring books.",
+};
 
 export default function TermsOfService() {
   return (

@@ -1,5 +1,10 @@
-"use client";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Refund Policy | SDMoh Studio",
+  description: "Read our Refund Policy. All SDMoh Studio coloring book purchases and returns are fulfilled via Amazon KDP.",
+};
 
 export default function RefundPolicy() {
   return (

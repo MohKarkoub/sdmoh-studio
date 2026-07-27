@@ -41,15 +41,18 @@ export default function MobileDock() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    lastY.current = window.scrollY;
+    lastY.current = typeof window !== "undefined" ? window.scrollY : 0;
+    const id = requestAnimationFrame(() => setMounted(true));
     const onScroll = () => {
       const y = window.scrollY;
       setShow(y < lastY.current || y < 50);
       lastY.current = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      cancelAnimationFrame(id);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   if (!mounted) return null;
@@ -61,7 +64,7 @@ export default function MobileDock() {
       className="fixed bottom-0 left-0 right-0 z-50 flex justify-center md:hidden"
     >
       <nav className="flex items-end gap-2 px-4 pb-3 pt-2 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl mb-4 shadow-lg shadow-black/20">
-        {items.map(({ label, href, icon }) => {
+        {items.map(({ href, icon }) => {
           const active = pathname === href;
           return (
             <button
