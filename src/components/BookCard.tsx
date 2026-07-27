@@ -53,18 +53,17 @@ export default function BookCard({ book, onRead }: BookCardProps) {
   return (
     <figure
       ref={ref}
-      className="tilted-card-figure group relative"
-      style={{ height: "auto", width: "100%" }}
+      className="tilted-card-figure group relative h-full"
       onMouseMove={handleMouse}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       <div className="absolute -inset-1 bg-gradient-to-r from-orange-500/20 via-purple-500/20 to-cyan-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <motion.div
-        className="tilted-card-inner relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden w-full"
+        className="tilted-card-inner relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden w-full h-full flex flex-col"
         style={{ rotateX, rotateY, scale }}
       >
-        <div className="aspect-[0.75] relative overflow-hidden">
+        <div className="aspect-[0.75] relative overflow-hidden shrink-0">
           <img
             src={book.coverImage}
             alt={book.title}
@@ -72,10 +71,11 @@ export default function BookCard({ book, onRead }: BookCardProps) {
             loading="lazy"
           />
         </div>
-        <div className="p-5">
+        <div className="p-5 flex flex-col flex-1">
           <h3 className="text-white/90 line-clamp-2 leading-relaxed mb-2 font-body text-base">
             {book.title}
           </h3>
+          <div className="flex-1" />
           <div className="flex items-center justify-between mb-3">
             {book.price && (
               <span className="text-white/60 font-body text-sm">{book.price}</span>

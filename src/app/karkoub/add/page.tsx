@@ -51,7 +51,7 @@ export default function AddBookPage() {
     if (sessionStorage.getItem("karkoub_auth") === "true") {
       setAuthenticated(true);
     }
-    const savedToken = (sessionStorage.getItem("github_token") || "").trim();
+    const savedToken = (localStorage.getItem("github_token") || "").trim();
     setToken(savedToken);
   }, []);
 
@@ -67,7 +67,7 @@ export default function AddBookPage() {
   }
 
   function saveToken() {
-    sessionStorage.setItem("github_token", token.trim());
+    localStorage.setItem("github_token", token.trim());
     setToken(token.trim());
     setShowToken(false);
   }

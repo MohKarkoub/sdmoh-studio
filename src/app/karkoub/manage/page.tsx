@@ -17,6 +17,25 @@ interface BookData {
   hidden?: boolean;
 }
 
+function flatten(arr: any[]): any[] {
+  const seen = new Set<string>();
+  const result: any[] = [];
+  function walk(items: any[]) {
+    for (const item of items) {
+      if (Array.isArray(item)) {
+        walk(item);
+      } else if (item && typeof item === "object" && item.id) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id);
+          result.push(item);
+        }
+      }
+    }
+  }
+  walk(arr);
+  return result;
+}
+
 export default function ManageBooksPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -34,14 +53,14 @@ export default function ManageBooksPage() {
     if (sessionStorage.getItem("karkoub_auth") === "true") {
       setAuthenticated(true);
     }
-    const savedToken = (sessionStorage.getItem("github_token") || "").trim();
+    const savedToken = (localStorage.getItem("github_token") || "").trim();
     setToken(savedToken);
   }, []);
 
   async function loadBooks() {
     setLoading(true);
     try {
-      const savedToken = (sessionStorage.getItem("github_token") || "").trim();
+      const savedToken = (localStorage.getItem("github_token") || "").trim();
       let data: BookData[];
       if (savedToken) {
         const res = await fetch(GITHUB_API, { headers: { Authorization: `token ${savedToken}` } });
@@ -54,15 +73,15 @@ export default function ManageBooksPage() {
       } else {
         throw new Error("No token");
       }
-      setBooks(data);
-      setOriginalBooks(data);
+      setBooks(flatten(data));
+      setOriginalBooks(flatten(data));
     } catch {
       try {
         const res = await fetch(rawUrl());
         if (res.ok) {
           const data = await res.json();
-          setBooks(data);
-          setOriginalBooks(data);
+          setBooks(flatten(data));
+          setOriginalBooks(flatten(data));
         }
       } catch {}
     } finally {
@@ -72,22 +91,22 @@ export default function ManageBooksPage() {
 
   async function refreshFromAPI() {
     try {
-      const t = (sessionStorage.getItem("github_token") || token).trim();
+      const t = (localStorage.getItem("github_token") || token).trim();
       if (t) {
         const res = await fetch(GITHUB_API, { headers: { Authorization: `token ${t}` } });
         if (res.ok) {
           const json = await res.json();
           const parsed = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\s/g, '')))));
-          setBooks(parsed);
-          setOriginalBooks(parsed);
+          setBooks(flatten(parsed));
+          setOriginalBooks(flatten(parsed));
           return;
         }
       }
       const res = await fetch(rawUrl());
       if (res.ok) {
         const data = await res.json();
-        setBooks(data);
-        setOriginalBooks(data);
+        setBooks(flatten(data));
+        setOriginalBooks(flatten(data));
       }
     } catch {}
   }
@@ -109,7 +128,7 @@ export default function ManageBooksPage() {
   }
 
   function saveToken() {
-    sessionStorage.setItem("github_token", token.trim());
+    localStorage.setItem("github_token", token.trim());
     setToken(token.trim());
     setShowToken(false);
     loadBooks();
@@ -168,7 +187,6 @@ export default function ManageBooksPage() {
       }
       setSaveMsg({ ok: true, text: "Saved to GitHub! Changes are live." });
       setOriginalBooks([...books]);
-      refreshFromAPI();
     } catch (err: any) {
       setSaveMsg({ ok: false, text: err.message || "Failed to save to GitHub" });
     } finally {
@@ -177,7 +195,7 @@ export default function ManageBooksPage() {
   }, [books, token]);
 
   const filtered = books.filter((b) =>
-    b.title.toLowerCase().includes(search.toLowerCase()) ||
+    b.title?.toLowerCase().includes(search.toLowerCase()) ||
     b.asin?.toLowerCase().includes(search.toLowerCase())
   );
 
