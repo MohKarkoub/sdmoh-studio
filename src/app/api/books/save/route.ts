@@ -2,25 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 const GITHUB_API = "https://api.github.com/repos/MohKarkoub/sdmoh-studio/contents/public/books.json";
 
-function flatten(arr: any[]): any[] {
-  const seen = new Set<string>();
-  const result: any[] = [];
-  function walk(items: any[]) {
-    for (const item of items) {
-      if (Array.isArray(item)) {
-        walk(item);
-      } else if (item && typeof item === "object" && item.id) {
-        if (!seen.has(item.id)) {
-          seen.add(item.id);
-          result.push(item);
-        }
-      }
-    }
-  }
-  walk(arr);
-  return result;
-}
-
 export async function POST(req: NextRequest) {
   try {
     const { books, token, message } = await req.json();
@@ -44,12 +25,8 @@ export async function POST(req: NextRequest) {
     const sha = shaData.sha;
 
     const raw = shaData.content.replace(/\s/g, "");
-    let currentBooks = flatten(JSON.parse(decodeURIComponent(escape(atob(raw)))));
-    if (Array.isArray(books)) {
-      currentBooks = books;
-    } else {
-      currentBooks.unshift(books);
-    }
+    const currentBooks = JSON.parse(decodeURIComponent(escape(atob(raw))));
+    currentBooks.push(books);
 
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(currentBooks, null, 2))));
 

@@ -23,7 +23,7 @@ export default function KarkoubDashboard() {
 
   useEffect(() => {
     if (!authenticated) return;
-    fetch("/api/books")
+    fetch(BOOKS_JSON_URL)
       .then((r) => r.json())
       .then((data) => {
         setStats({

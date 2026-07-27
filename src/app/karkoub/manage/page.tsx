@@ -17,25 +17,6 @@ interface BookData {
   hidden?: boolean;
 }
 
-function flatten(arr: any[]): any[] {
-  const seen = new Set<string>();
-  const result: any[] = [];
-  function walk(items: any[]) {
-    for (const item of items) {
-      if (Array.isArray(item)) {
-        walk(item);
-      } else if (item && typeof item === "object" && item.id) {
-        if (!seen.has(item.id)) {
-          seen.add(item.id);
-          result.push(item);
-        }
-      }
-    }
-  }
-  walk(arr);
-  return result;
-}
-
 export default function ManageBooksPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -73,15 +54,15 @@ export default function ManageBooksPage() {
       } else {
         throw new Error("No token");
       }
-      setBooks(flatten(data));
-      setOriginalBooks(flatten(data));
+      setBooks(data);
+      setOriginalBooks(data);
     } catch {
       try {
         const res = await fetch(rawUrl());
         if (res.ok) {
           const data = await res.json();
-          setBooks(flatten(data));
-          setOriginalBooks(flatten(data));
+          setBooks(data);
+          setOriginalBooks(data);
         }
       } catch {}
     } finally {
@@ -97,16 +78,16 @@ export default function ManageBooksPage() {
         if (res.ok) {
           const json = await res.json();
           const parsed = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\s/g, '')))));
-          setBooks(flatten(parsed));
-          setOriginalBooks(flatten(parsed));
+          setBooks(parsed);
+          setOriginalBooks(parsed);
           return;
         }
       }
       const res = await fetch(rawUrl());
       if (res.ok) {
         const data = await res.json();
-        setBooks(flatten(data));
-        setOriginalBooks(flatten(data));
+        setBooks(data);
+        setOriginalBooks(data);
       }
     } catch {}
   }
@@ -187,6 +168,7 @@ export default function ManageBooksPage() {
       }
       setSaveMsg({ ok: true, text: "Saved to GitHub! Changes are live." });
       setOriginalBooks([...books]);
+      refreshFromAPI();
     } catch (err: any) {
       setSaveMsg({ ok: false, text: err.message || "Failed to save to GitHub" });
     } finally {
@@ -195,7 +177,7 @@ export default function ManageBooksPage() {
   }, [books, token]);
 
   const filtered = books.filter((b) =>
-    b.title?.toLowerCase().includes(search.toLowerCase()) ||
+    b.title.toLowerCase().includes(search.toLowerCase()) ||
     b.asin?.toLowerCase().includes(search.toLowerCase())
   );
 
